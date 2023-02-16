@@ -2,7 +2,7 @@
   "id": "acc_recorder",
   "name": "Accelerometer Recorder",
   "shortName": "Accele Recorder",
-  "version": "0.02",
+  "version": "0.03",
   "description": "Record accelerometer, store locally average 20 seconds, and send to app via Gadgetbridge on the phonen average 10 seconds",
   "icon": "app.png",
   "tags": "tool,recorder,acc",
@@ -15,5 +15,5 @@
     {"name":"acc_recorder.wid.js","url":"widget.js"},
     {"name":"acc_recorder.settings.js","url":"settings.js"}
   ],
-  "data": [{"name":"acc_recorder.json","url":"app-settings.json"},{"wildcard":"recorder.log?.csv","storageFile":true}]
+  "data": [{"name":"acc_recorder.json","url":"app-settings.json"},{"wildcard":"acc_20?.csv","storageFile":true}]
 }
