@@ -8,8 +8,8 @@
   let bluetoothBuffer = "";
 
   let RECORDING_FREQUENCY_HZ = 20;
-  let SAVING_FREQUENCY_MS = 60*000; //every 1 minute
-  let TRANSMITTING_FREQUENCY_MS = 20*000;
+  let SAVING_FREQUENCY_MS = 60*1000; //every 1 minute
+  let TRANSMITTING_FREQUENCY_MS = 20*1000;
   let LINE_SEPARATOR = "\n";
 
   let loadSettings = function() {
@@ -102,6 +102,7 @@
       if (NRF.getSecurityStatus().connected) {
         console.log("Send to phone now ..... ")
         console.log(bluetoothBuffer)
+
         Bluetooth.println(bluetoothBuffer);
         entriesNotTransmittedYet = 0;
         bluetoothBuffer = "";
