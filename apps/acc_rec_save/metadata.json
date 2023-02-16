@@ -1,6 +1,6 @@
 { "id": "myacc",
-  "name": "Accelerometer App",
-  "shortName":"Accelerometer Recorder and Transmittion",
+  "name": "My Acc App",
+  "shortName":"Acc App",
   "version":"0.03",
   "description": "Record acceleration",
   "icon": "app.png",
