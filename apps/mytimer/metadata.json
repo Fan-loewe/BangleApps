@@ -1,7 +1,7 @@
 { "id": "mytimer",
   "name": "My Timer App",
   "shortName":"My Timer",
-  "version":"0.01",
+  "version":"0.03",
   "description": "A detailed description of my great app",
   "icon": "app.png",
   "tags": "",
