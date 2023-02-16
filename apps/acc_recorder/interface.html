@@ -172,40 +172,20 @@ function downloadTrack(filename, callback) {
 function getTrackList() {
   Util.showModal("Loading Track List...");
   domTracks.innerHTML = "";
-  Puck.eval(`require("Storage").list(/^recorder\\.log.*\\.csv$/,{sf:1})`,files=>{
+  Puck.eval(`require("Storage").list(/^acc_20/{sf:1})`,files=>{
     var trackList = [];
     var promise = Promise.resolve();
-    /* For each file ask Bangle.js for info. Since we now start recording even
-    before we have a GPS trace, we get the Bangle to do a *quick* search for us
-    to see if it found any data first. */
     files.forEach(filename => {
       promise = promise.then(()=>new Promise(resolve => {
-        var trackNo = filename.match(/^recorder\.log(.*)\.csv$/)[1];
-        Util.showModal(`Loading Track ${trackNo}...`);
-        Puck.eval(`(function(fn) {
-  var f = require("Storage").open(fn,"r");
-  var headers = f.readLine().trim();
-  var data = f.readLine();
-  var lIdx = headers.split(",").indexOf("Latitude");
-  if (lIdx >= 0) {
-    var tries = 100;
-    var l = data;
-    while (l && l.split(",")[lIdx]=="" && tries++)
-      l = f.readLine();
-    if (l) data = l;
-  }
-  return {headers:headers,l:data};
-})(${JSON.stringify(filename)})`, trackInfo=>{
+        Util.showModal(`Loading Track ...`);
+        Puck.eval(`(${JSON.stringify(filename)})`, trackInfo=>{
           console.log(filename," => ",trackInfo);
-          if (!trackInfo || !"headers" in trackInfo) {
+          if (!trackInfo) {
             showToast("Error loading track list.", "error");
             resolve();
           }
-          trackInfo.headers = trackInfo.headers.split(",");
           trackList.push({
-            filename : filename,
-            number : trackNo,
-            info : trackInfo
+            filename : filename
           });
           resolve();
         });
@@ -220,28 +200,16 @@ function getTrackList() {
       <div class="columns">\n`;
       trackList.forEach(track => {
         console.log("track", track);
-        var trackData = trackLineToObject(track.info.headers, track.info.l);
-        console.log("trackData", trackData);
         html += `
          <div class="column col-12">
            <div class="card-header">
-             <div class="card-title h5">Track ${track.number}</div>
-             <div class="card-subtitle text-gray">${trackData.Time?trackData.Time.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }):"No track data"}</div>
+             <div class="card-title h5">Track</div>
            </div>
-${trackData.Latitude ? `
-           <div class="card-image">
-             <iframe
-               width="100%"
-               height="250"
-               frameborder="0" style="border:0"
-               src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBxTcwrrVOh2piz7EmIs1Xn4FsRxJWeVH4&q=${trackData.Latitude},${trackData.Longitude}&zoom=10" allowfullscreen>
-             </iframe>
-           </div><div class="card-body"></div>` : `<div class="card-body">No GPS info</div>`}
+${true ? `
+           <div class="card-body"></div>` : `<div class="card-body">No GPS info</div>`}
            <div class="card-footer">
-             <button class="btn btn-primary" filename="${track.filename}" trackid="${track.number}" task="downloadkml">Download KML</button>
-             <button class="btn btn-primary" filename="${track.filename}" trackid="${track.number}" task="downloadgpx">Download GPX</button>
-             <button class="btn btn-primary" filename="${track.filename}" trackid="${track.number}" task="downloadcsv">Download CSV</button>
-             <button class="btn btn-default" filename="${track.filename}" trackid="${track.number}" task="delete">Delete</button>
+             <button class="btn btn-primary" filename="${track.filename}" task="downloadcsv">Download CSV</button>
+             <button class="btn btn-default" filename="${track.filename}" task="delete">Delete</button>
            </div>
          </div>
         `;
@@ -251,21 +219,11 @@ ${trackData.Latitude ? `
          <div class="column col-12">
            <div class="card-header">
              <div class="card-title h5">No tracks</div>
-             <div class="card-subtitle text-gray">No GPS tracks found</div>
+             <div class="card-subtitle text-gray">No tracks found</div>
            </div>
          </div>
          `;
         }
-        html += `
-        </div><!-- columns -->
-        <h2>Settings</h2>
-        <div class="form-group">
-          <label class="form-switch">
-            <input type="checkbox" id="settings-allow-no-gps" ${(localStorage.getItem("recorder-allow-no-gps")=="true")?"checked":""}>
-            <i class="form-icon"></i> Include GPX/KML entries even when there's no GPS info
-          </label>
-        </div>
-        </div>`;
         domTracks.innerHTML = html;
         document.getElementById("settings-allow-no-gps").addEventListener("change",event=>{
           var allowNoGPS = event.target.checked;
@@ -286,12 +244,6 @@ ${trackData.Latitude ? `
              Util.hideModal();
              getTrackList();
            });
-         }
-         if (task=="downloadkml") {
-           downloadTrack(filename, track => saveKML(track, `Bangle.js Track ${trackid}`));
-         }
-         if (task=="downloadgpx") {
-           downloadTrack(filename, track => saveGPX(track, `Bangle.js Track ${trackid}`));
          }
          if (task=="downloadcsv") {
            downloadTrack(filename, track => saveCSV(track, `Bangle.js Track ${trackid}`));
