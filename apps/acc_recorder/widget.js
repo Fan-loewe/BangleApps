@@ -1,5 +1,5 @@
 {
-  let storageFile; // file for GPS track
+  let storageFile; 
   let entriesWritten = 0;
   let entriesNotTransmittedYet = 0;
   let activeRecorders = [];
@@ -8,8 +8,8 @@
   let bluetoothBuffer = "";
 
   let RECORDING_FREQUENCY_HZ = 20;
-  let SAVING_FREQUENCY_MS = 10000;
-  let TRANSMITTING_FREQUENCY_MS = 20000;
+  let SAVING_FREQUENCY_MS = 60*000; //every 1 minute
+  let TRANSMITTING_FREQUENCY_MS = 20*000;
   let LINE_SEPARATOR = "\n";
 
   let loadSettings = function() {
@@ -55,11 +55,9 @@
                   },
                   start: () => {
                       Bangle.on('accel', onAcc);
-                      Bangle.setCompassPower(1, "recorder");
                   },
                   stop: () => {
                       Bangle.removeListener('accel', onAcc);
-                      Bangle.setCompassPower(0, "recorder");
                   },
                   draw: (x, y) => g.setColor(Bangle.isCompassOn() ? "#0f0" : "#f88").drawImage(atob("DAwBEAKARAKQE4DwHkPqPRGKAEAA"), x, y)
               };
@@ -102,6 +100,8 @@
     if(entriesNotTransmittedYet*(1000/RECORDING_FREQUENCY_HZ) >= TRANSMITTING_FREQUENCY_MS) {
       // if there is bluetooth connection
       if (NRF.getSecurityStatus().connected) {
+        console.log("Send to phone now ..... ")
+        console.log(bluetoothBuffer)
         Bluetooth.println(bluetoothBuffer);
         entriesNotTransmittedYet = 0;
         bluetoothBuffer = "";
