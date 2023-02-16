@@ -27,11 +27,16 @@ function updateSettings() {
 
 function getTrackNumber(filename) {
   var trackNum = 0;
-  var matches = filename.match(/^recorder\.log(.*)\.csv$/);
+  var matches = filename.match(/^acc.*\\.csv$/);
   if (matches) {
     trackNum = parseInt(matches[1]||0);
   }
-  return trackNum;
+  //var trackNo = filename.match(/^recorder\.log(.*)\.csv$/)[1];
+  var trackNo = filename.split(".csv")[0].replace("acc_", "");
+  var parts = trackNo.split("-");
+  trackNo = parts[3]+parts[4]+parts[5];
+  trackNo = parseInt(trackNo);
+  return trackNo;
 }
 
 function showMainMenu() {

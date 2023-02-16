@@ -180,7 +180,10 @@ function getTrackList() {
     to see if it found any data first. */
     files.forEach(filename => {
       promise = promise.then(()=>new Promise(resolve => {
-        var trackNo = filename.match(/^acc.*\.csv$/)[1];
+        //var trackNo = filename.match(/^recorder\.log(.*)\.csv$/)[1];
+        var trackNo = filename.split(".csv")[0].replace("acc_", "");
+        var parts = trackNo.split("-");
+        trackNo = parts[3]+parts[4]+parts[5];
         Util.showModal(`Loading Track ${trackNo}...`);
         Puck.eval(`(function(fn) {
   var f = require("Storage").open(fn,"r");

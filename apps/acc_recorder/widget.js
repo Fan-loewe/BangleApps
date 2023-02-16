@@ -93,7 +93,7 @@
       if(entriesWritten*(1000/RECORDING_FREQUENCY_HZ) >= SAVING_FREQUENCY_MS) {
         writeStringToFileOnBangleJs(fileBuffer);
         entriesWritten = 0;
-        fileBuffer = "";
+        fileBuffer = getTableHeader();
       }
   
       // transmit via bluetooth if possible with TRANSMITTING_FREQUENCY_MS
@@ -109,13 +109,20 @@
           }));
   
           entriesNotTransmittedYet = 0;
-          bluetoothBuffer = "";
+          bluetoothBuffer = getTableHeader();
         }
         else {
           ;
         }
       }
-  
+    }
+
+    let getTableHeader = function() {
+        var fields = ["Time"];
+        activeRecorders.forEach(recorder => fields.push.apply(fields, recorder.fields));
+        console.log("getTableHeader()");
+        console.log(fields.join(",") + "\n");
+        return fields.join(",") + "\n";
     }
   
     let writeStringToFileOnBangleJs = function(text) {
