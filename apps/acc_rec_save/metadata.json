@@ -1,4 +1,4 @@
-{ "id": "myacc",
+{ "id": "acc_rec_save",
   "name": "My Acc App",
   "shortName":"Acc App",
   "version":"0.03",
@@ -8,7 +8,7 @@
   "supports" : ["BANGLEJS2"],  
   "readme": "README.md",
   "storage": [
-    {"name":"myacc.app.js","url":"app.js"},
-    {"name":"myacc.img","url":"app-icon.js","evaluate":true}
+    {"name":"acc_rec_save.app.js","url":"app.js"},
+    {"name":"acc_rec_save.img","url":"app-icon.js","evaluate":true}
   ]
 }
