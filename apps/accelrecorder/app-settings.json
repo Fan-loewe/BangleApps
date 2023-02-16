@@ -1,0 +1,6 @@
+{
+  "recording":1,
+  "file":"recorder.log0.csv",
+  "period":20,
+  "record" : ["bat"]
+}
