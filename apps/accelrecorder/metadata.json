@@ -4,7 +4,7 @@
   "shortName": "Accele Recorder",
   "version": "1.0",
   "description": "Record accelerometer, store locally average 20 seconds, and send to app via Gadgetbridge on the phonen average 10 seconds",
-  "icon": "app.png",
+  "icon": "icon.png",
   "tags": "tool,recorder,acc",
   "supports": ["BANGLEJS2"],
   "readme": "README.md",
