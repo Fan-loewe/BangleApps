@@ -1,8 +1,6 @@
 # Recorder
 
-![icon](app.png)
-
-################################################
+![icon](icon.png)
 
 This app allows you to record data every few seconds - it can run in background.
 
