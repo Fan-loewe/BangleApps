@@ -1,0 +1,14 @@
+{ "id": "myacc",
+  "name": "Accelerometer App",
+  "shortName":"Accelerometer Recorder and Transmittion",
+  "version":"0.03",
+  "description": "Record acceleration",
+  "icon": "app.png",
+  "tags": "",
+  "supports" : ["BANGLEJS2"],  
+  "readme": "README.md",
+  "storage": [
+    {"name":"myacc.app.js","url":"app.js"},
+    {"name":"myacc.img","url":"app-icon.js","evaluate":true}
+  ]
+}
