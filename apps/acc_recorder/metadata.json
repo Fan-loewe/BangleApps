@@ -2,7 +2,7 @@
   "id": "acc_recorder",
   "name": "Accelerometer Recorder",
   "shortName": "Accele Recorder",
-  "version": "0.06",
+  "version": "0.07",
   "description": "Record accelerometer, store locally average 20 seconds, and send to app via Gadgetbridge on the phonen average 10 seconds",
   "icon": "app.png",
   "tags": "tool,recorder,acc",
