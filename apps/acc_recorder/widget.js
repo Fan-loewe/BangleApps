@@ -100,10 +100,15 @@
       if(entriesNotTransmittedYet*(1000/RECORDING_FREQUENCY_HZ) >= TRANSMITTING_FREQUENCY_MS) {
         // if there is bluetooth connection
         if (NRF.getSecurityStatus().connected) {
-          Bluetooth.println(JSON.stringify({
-              t: "info",
-              msg: bluetoothBuffer
-          }));
+            var parts = bluetoothBuffer.split("\n");
+            for(part in parts){
+                Bluetooth.println(JSON.stringify({
+                    t: "info",
+                    msg: part
+                }));
+            }
+
+          
   
           entriesNotTransmittedYet = 0;
           bluetoothBuffer = getTableHeader();
