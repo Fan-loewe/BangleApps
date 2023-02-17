@@ -8,14 +8,14 @@
     let bluetoothBuffer = "";
   
     let RECORDING_FREQUENCY_HZ = 20;
-    let SAVING_FREQUENCY_MS = 10*1000; //every 1 minute
+    let SAVING_FREQUENCY_MS = 20*1000; //every 1 minute
     let TRANSMITTING_FREQUENCY_MS = 20*1000;
     let LINE_SEPARATOR = "\n";
   
     let loadSettings = function() {
         var settings = require("Storage").readJSON("recorder.json", 1) || {};
         settings.period = settings.period || 10;
-        if (!settings.file || !settings.file.startsWith("recorder.log"))
+        if (!settings.file || !settings.file.startsWith("acc_20"))
             settings.recording = false;
         return settings;
     }
@@ -100,9 +100,6 @@
       if(entriesNotTransmittedYet*(1000/RECORDING_FREQUENCY_HZ) >= TRANSMITTING_FREQUENCY_MS) {
         // if there is bluetooth connection
         if (NRF.getSecurityStatus().connected) {
-          console.log("Send to phone now ..... ")
-          console.log(bluetoothBuffer)
-  
           Bluetooth.println(JSON.stringify({
               t: "info",
               msg: bluetoothBuffer
@@ -120,8 +117,6 @@
     let getTableHeader = function() {
         var fields = ["Time"];
         activeRecorders.forEach(recorder => fields.push.apply(fields, recorder.fields));
-        console.log("getTableHeader()");
-        console.log(fields.join(",") + "\n");
         return fields.join(",") + "\n";
     }
   
@@ -141,46 +136,7 @@
     let getTimeStampAsString = function() {
       let timestamp = Math.floor(new Date().getTime()/1000)*1000;
       var date = new Date(timestamp).toISOString().slice(0, 19).replace(":", "-").replace(":", "-").replace("T", "-");
-      console.log(date);
-      // example output: "2023_02_15_23_03_58"
       return date;
-    }
-  
-  
-  
-    let writeLog = function() {
-        entriesWritten++;
-  
-        WIDGETS["recorder"].draw();
-        try {
-            var fields = [Math.round(getTime())];
-            activeRecorders.forEach(recorder => fields.push.apply(fields, recorder.getValues()));
-            if (storageFile) storageFile.write(fields.join(",") + "\n");
-  
-            // if there is bluetooth connection
-            if (NRF.getSecurityStatus().connected) {
-                Bluetooth.println(JSON.stringify({
-                    t: "info",
-                    msg: fields.join(",")
-                }));
-            }
-            //if there is no bluetooth connection
-            else {
-                // Initialize the screen
-                g.clear();
-                g.drawString("have no connection", 10, 10);
-                g.flip();
-            }
-  
-        } catch (e) {
-            // If storage.write caused an error, disable
-            // GPS recording so we don't keep getting errors!
-            console.log("recorder: error", e);
-            var settings = loadSettings();
-            settings.recording = false;
-            require("Storage").write("recorder.json", settings);
-            reload();
-        }
     }
   
     // Called by the GPS app to reload settings and decide what to do
@@ -191,10 +147,6 @@
   
         activeRecorders.forEach(rec => rec.stop());
         activeRecorders = [];
-        entriesWritten = 0;
-        entriesNotTransmittedYet = 0;
-        fileBuffer = "";
-        bluetoothBuffer = "";
   
         if (settings.recording) {
             // set up recorders
@@ -209,6 +161,10 @@
                 activeRecorder.start();
                 activeRecorders.push(activeRecorder);
                 // TODO: write field names?
+                entriesWritten = 0;
+                entriesNotTransmittedYet = 0;
+                fileBuffer = getTableHeader();
+                bluetoothBuffer = getTableHeader();
             });
             WIDGETS["recorder"].width = 15 + ((activeRecorders.length + 1) >> 1) * 12; // 12px per recorder
             // open/create file
@@ -217,11 +173,11 @@
                 // TODO: what if loaded modules are different??
             } else {
                 storageFile = require("Storage").open(settings.file, "w");
-                // New file - write headers
-                var fields = ["Time"];
-                activeRecorders.forEach(recorder => fields.push.apply(fields, recorder.fields));
-                storageFile.write(fields.join(",") + "\n");
             }
+            // New file - write headers
+            //var fields = ["Time"];
+            //activeRecorders.forEach(recorder => fields.push.apply(fields, recorder.fields));
+            //storageFile.write(fields.join(",") + "\n");
             // start recording...
             WIDGETS["recorder"].draw();
             //writeInterval = setInterval(writeLog, 1000/RECORDING_FREQUENCY_HZ); 
@@ -250,18 +206,12 @@
         setRecording: function(isOn, forceAppend) {
             var settings = loadSettings();
             if (isOn && !settings.recording && !settings.file) {
-                settings.file = "recorder.log0.csv";
+                settings.file = "acc_"+getTimeStampAsString()+".csv";
             } else if (isOn && !forceAppend && !settings.recording && require("Storage").list(settings.file).length) {
-                var logfiles = require("Storage").list(/recorder.log.*/);
-                var maxNumber = 0;
-                for (var c of logfiles) {
-                    maxNumber = Math.max(maxNumber, c.match(/\d+/)[0]);
-                }
-                var newFileName;
-                if (maxNumber < 99) {
-                    newFileName = "recorder.log" + (maxNumber + 1) + ".csv";
-                    updateSettings(settings);
-                }
+                var logfiles = require("Storage").list(/acc_20*/);
+                var newFileName = "acc_"+getTimeStampAsString()+".csv";
+                updateSettings(settings);
+
                 var buttons = {
                     /*LANG*/
                     "Yes": "overwrite",
@@ -269,7 +219,7 @@
                 };
                 if (newFileName) buttons[ /*LANG*/ "New"] = "new";
                 buttons[ /*LANG*/ "Append"] = "append";
-                return E.showPrompt( /*LANG*/ "Overwrite\nLog " + settings.file.match(/\d+/)[0] + "?", {
+                return E.showPrompt( /*LANG*/ "Overwrite\n " + settings.file.split("-").slice(-3).join("").split(".")[0] + "?", {
                     title: /*LANG*/ "Recorder",
                     buttons: buttons
                 }).then(selection => {
