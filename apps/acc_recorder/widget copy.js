@@ -1,13 +1,5 @@
 {
     let storageFile; 
-    
-    let currentRecording = "";
-
-    let recordingBuffer = [];
-    let recordingsWrittenToFile = 0;
-    let MAX_RECORDING_BUFFER_LENGTH = 10*50;
-
-
     let entriesWritten = 0;
     let entriesNotTransmittedYet = 0;
     let activeRecorders = [];
@@ -87,103 +79,44 @@
         return recorders;
     }
   
+  
     let recordInformation = function() {
-        // do recording to buffer (this function is called with RECORDING_FREQUENCY_HZ)
-        try {
-            currentRecording = getRecordingAsString();
-        } catch(e) {
-            Bluetooth.println("getRecordingAsString() failed, skip for this time");
-            currentRecording = "";
-        }
-
-        //fileBuffer += LINE_SEPARATOR+currentRecording; 
-        //bluetoothBuffer += LINE_SEPARATOR+currentRecording; 
-
-        /*
-        // save to file with SAVING_FREQUENCY_MS
-        if(entriesWritten*(1000/RECORDING_FREQUENCY_HZ) >= SAVING_FREQUENCY_MS) {
+      entriesWritten++;
+      entriesNotTransmittedYet++;
+  
+      // do recording to buffer (this function is called with RECORDING_FREQUENCY_HZ)
+      let currentRecording = getRecordingAsString();
+      fileBuffer += LINE_SEPARATOR+currentRecording; 
+      bluetoothBuffer += LINE_SEPARATOR+currentRecording; 
+  
+      // save to file with SAVING_FREQUENCY_MS
+      if(entriesWritten*(1000/RECORDING_FREQUENCY_HZ) >= SAVING_FREQUENCY_MS) {
         writeStringToFileOnBangleJs(fileBuffer);
         entriesWritten = 0;
         fileBuffer = getTableHeader();
-        }*/
+      }
   
-        // if there is bluetooth connection (again)
-        if (NRF.getSecurityStatus().connected && currentRecording!="") {
-
-            // Then set current recording
-            Bluetooth.println(JSON.stringify({
-                t: "info",
-                msg: currentRecording
-            }));
-        }
-
-        // handle current recording and memorize it until there is bluetooth connection again
-        else if(currentRecording!="") {
-            // add the record to buffer
-            console.log("=--------current recording is ", currentRecording);
-            recordingBuffer.push(currentRecording);
-            // if buffer full
-            if(recordingBuffer.length==MAX_RECORDING_BUFFER_LENGTH) {
-                // store to file
-                let file = require("Storage").open("acc_backup.txt", "a");
-                for (let record of recordingBuffer) {
-                    file.write(`${record}\n`);
-                    recordingsWrittenToFile += 1;
-                  }
-                /*
-                for(recordIdx in recordingBuffer) {
-                    file.write(recordingBuffer[recordIdx])
-                    file.write("\n");
-                    recordingsWrittenToFile += 1;
-                }
-                */
-                // make buffer empty again
-                recordingBuffer = []
-            }
-        }
-    }
-
-    let uploadBackup = function() {  
+      // transmit via bluetooth if possible with TRANSMITTING_FREQUENCY_MS
+      if(entriesNotTransmittedYet*(1000/RECORDING_FREQUENCY_HZ) >= TRANSMITTING_FREQUENCY_MS) {
+        // if there is bluetooth connection
         if (NRF.getSecurityStatus().connected) {
-
-            // if recording file not empty
-            if(recordingsWrittenToFile!=0) {
-                Bluetooth.println("recording buffer file not empty");
-                // send recording file first
-                var f = require("Storage").open("acc_backup.txt", "r");
-                var l = f.readLine();
-                while(l!=undefined) {
-                    if(l!="\n") {
-                        Bluetooth.println(JSON.stringify({
-                            t: "info",
-                            msg: l
-                        }));
-                    }
-                    l = f.readLine();
-                }
-                // empty file
-                var f2 = require("Storage").open("acc_backup.txt", "w");
-                f2.write("\n");
-                recordingsWrittenToFile = 0
+            var parts = bluetoothBuffer.split("\n");
+            console.log("thats in parts...");
+            console.log(parts);
+            for(part in parts){
+                Bluetooth.println(JSON.stringify({
+                    t: "info",
+                    msg: part
+                }));
             }
-
-            // if buffer not empty
-            if(recordingBuffer.length!=0) {
-                Bluetooth.println("recording buffer not empty");
-                // send buffer
-                for(recordIdx in recordingBuffer) {
-                    Bluetooth.println(JSON.stringify({
-                        t: "info",
-                        msg: recordingBuffer[recordIdx]
-                    }));
-                }
-                // empty buffer
-                recordingBuffer = []
-            }
+          entriesNotTransmittedYet = 0;
+          bluetoothBuffer = getTableHeader();
         }
+        else {
+          ;
+        }
+      }
     }
-
-    
 
     let getTableHeader = function() {
         var fields = ["Time"];
@@ -210,11 +143,10 @@
       return date;
     }
   
-    // Main function
+    // Called by the GPS app to reload settings and decide what to do
     let reload = function() {
         var settings = loadSettings();
-        if (writeInterval) 
-            clearInterval(writeInterval);
+        if (writeInterval) clearInterval(writeInterval);
         writeInterval = undefined;
   
         activeRecorders.forEach(rec => rec.stop());
@@ -233,10 +165,10 @@
                 activeRecorder.start();
                 activeRecorders.push(activeRecorder);
                 // TODO: write field names?
-                //entriesWritten = 0;
-                //entriesNotTransmittedYet = 0;
-                //fileBuffer = getTableHeader();
-                //bluetoothBuffer = getTableHeader();
+                entriesWritten = 0;
+                entriesNotTransmittedYet = 0;
+                fileBuffer = getTableHeader();
+                bluetoothBuffer = getTableHeader();
             });
             WIDGETS["recorder"].width = 15 + ((activeRecorders.length + 1) >> 1) * 12; // 12px per recorder
             // open/create file
@@ -253,15 +185,12 @@
             // start recording...
             WIDGETS["recorder"].draw();
             //writeInterval = setInterval(writeLog, 1000/RECORDING_FREQUENCY_HZ); 
-            setInterval(recordInformation, 1000/RECORDING_FREQUENCY_HZ); 
-            setInterval(uploadBackup, 1000 * 10); //every 10 secs send backup 
-
+            writeInterval = setInterval(recordInformation, 1000/RECORDING_FREQUENCY_HZ); 
         } else {
             WIDGETS["recorder"].width = 0;
             storageFile = undefined;
         }
     }
-
     // add the widget
     WIDGETS["recorder"] = {
         area: "tl",
