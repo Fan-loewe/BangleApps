@@ -109,8 +109,6 @@
   
         // if there is bluetooth connection (again)
         if (NRF.getSecurityStatus().connected && currentRecording!="") {
-
-            // Then set current recording
             Bluetooth.println(JSON.stringify({
                 t: "info",
                 msg: currentRecording
@@ -162,9 +160,9 @@
                     l = f.readLine();
                 }
                 // empty file
-                var f2 = require("Storage").open("acc_backup.txt", "w");
-                f2.write("\n");
-                recordingsWrittenToFile = 0
+                //var f2 = require("Storage").open("acc_backup.txt", "w");
+                //f2.write("\n");
+                //recordingsWrittenToFile = 0
             }
 
             // if buffer not empty
@@ -198,10 +196,15 @@
     }
   
     let getRecordingAsString = function() {
-      var fields = [Math.round(getTime())];
-      activeRecorders.forEach(recorder => fields.push.apply(fields, recorder.getValues()));
-      // example output: {t:num, msg:"sfs,sfsf,sf,sfs,sf"}
-      return fields.join(",");
+        if(activeRecorders.length>0) {
+            var fields = [Math.round(getTime())];
+            activeRecorders.forEach(recorder => fields.push.apply(fields, recorder.getValues()));
+            // example output: {t:num, msg:"sfs,sfsf,sf,sfs,sf"}
+            return fields.join(",");
+        }
+        else {
+            return "";
+        }
     }
   
     let getTimeStampAsString = function() {
