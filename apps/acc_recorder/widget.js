@@ -21,7 +21,7 @@
     let LINE_SEPARATOR = "\n";
   
     let loadSettings = function() {
-        var settings = require("Storage").readJSON("recorder.json", 1) || {};
+        var settings = require("Storage").readJSON("acc_recorder.json", 1) || {};
         settings.period = settings.period || 10;
         if (!settings.file || !settings.file.startsWith("acc_20"))
             settings.recording = false;
@@ -29,8 +29,8 @@
     }
   
     let updateSettings = function(settings) {
-        require("Storage").writeJSON("recorder.json", settings);
-        if (WIDGETS["recorder"]) WIDGETS["recorder"].reload();
+        require("Storage").writeJSON("acc_recorder.json", settings);
+        if (WIDGETS["acc_recorder"]) WIDGETS["acc_recorder"].reload();
     }
   
     let getRecorders = function() {
@@ -83,7 +83,7 @@
                 };
             }
         };
-        require("Storage").list(/^.*\.recorder\.js$/).forEach(fn => eval(require("Storage").read(fn))(recorders));
+        require("Storage").list(/^.*\.acc_recorder\.js$/).forEach(fn => eval(require("Storage").read(fn))(recorders));
         return recorders;
     }
   
@@ -237,7 +237,7 @@
                 //fileBuffer = getTableHeader();
                 //bluetoothBuffer = getTableHeader();
             });
-            WIDGETS["recorder"].width = 15 + ((activeRecorders.length + 1) >> 1) * 12; // 12px per recorder
+            WIDGETS["acc_recorder"].width = 15 + ((activeRecorders.length + 1) >> 1) * 12; // 12px per recorder
             // open/create file
             if (require("Storage").list(settings.file).length) { // Append
                 storageFile = require("Storage").open(settings.file, "a");
@@ -250,19 +250,19 @@
             //activeRecorders.forEach(recorder => fields.push.apply(fields, recorder.fields));
             //storageFile.write(fields.join(",") + "\n");
             // start recording...
-            WIDGETS["recorder"].draw();
+            WIDGETS["acc_recorder"].draw();
             //writeInterval = setInterval(writeLog, 1000/RECORDING_FREQUENCY_HZ); 
             setInterval(recordInformation, 1000/RECORDING_FREQUENCY_HZ); 
             setInterval(uploadBackup, 1000 * 10); //every 10 secs send backup 
 
         } else {
-            WIDGETS["recorder"].width = 0;
+            WIDGETS["acc_recorder"].width = 0;
             storageFile = undefined;
         }
     }
 
     // add the widget
-    WIDGETS["recorder"] = {
+    WIDGETS["acc_recorder"] = {
         area: "tl",
         width: 0,
         draw: function() {
@@ -294,7 +294,7 @@
                 if (newFileName) buttons[ /*LANG*/ "New"] = "new";
                 buttons[ /*LANG*/ "Append"] = "append";
                 return E.showPrompt( /*LANG*/ "Overwrite\n " + settings.file.split("-").slice(-3).join("").split(".")[0] + "?", {
-                    title: /*LANG*/ "Recorder",
+                    title: /*LANG*/ "Acc_recorder",
                     buttons: buttons
                 }).then(selection => {
                     if (selection === "cancel") return false; // just cancel
@@ -305,12 +305,12 @@
                         updateSettings(settings);
                     }
                     // if (selection==="append") // we do nothing - all is fine
-                    return WIDGETS["recorder"].setRecording(1, true /*force append*/ );
+                    return WIDGETS["acc_recorder"].setRecording(1, true /*force append*/ );
                 });
             }
             settings.recording = isOn;
             updateSettings(settings);
-            WIDGETS["recorder"].reload();
+            WIDGETS["acc_recorder"].reload();
             return Promise.resolve(settings.recording);
         },
         plotTrack: function(m) { // m=instance of openstmap module

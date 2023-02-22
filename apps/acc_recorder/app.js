@@ -3,26 +3,32 @@ Bangle.drawWidgets();
 
 var settings;
 
+let getTimeStampAsString = function() {
+  let timestamp = Math.floor(new Date().getTime()/1000)*1000;
+  var date = new Date(timestamp).toISOString().slice(0, 19).replace(":", "-").replace(":", "-").replace("T", "-");
+  return date;
+}
+
 function loadSettings() {
-  settings = require("Storage").readJSON("recorder.json",1)||{};
+  settings = require("Storage").readJSON("acc_recorder.json",1)||{};
   var changed = false;
   if (!settings.file) {
     changed = true;
-    settings.file = "recorder.log0.csv";
+    settings.file = "acc_"+getTimeStampAsString()+".csv";
   }
   if (!Array.isArray(settings.record)) {
-    settings.record = ["accel","bat"];
+    settings.record = ["Acc","bat"];
     changed = true;
   }
   if (changed)
-    require("Storage").writeJSON("recorder.json", settings);
+    require("Storage").writeJSON("acc_recorder.json", settings);
 }
 loadSettings();
 
 function updateSettings() {
-  require("Storage").writeJSON("recorder.json", settings);
-  if (WIDGETS["recorder"])
-    WIDGETS["recorder"].reload();
+  require("Storage").writeJSON("acc_recorder.json", settings);
+  if (WIDGETS["acc_recorder"])
+    WIDGETS["acc_recorder"].reload();
 }
 
 function getTrackNumber(filename) {
@@ -52,7 +58,7 @@ function showMainMenu() {
     };
   }
   const mainmenu = {
-    '': { 'title': /*LANG*/'Recorder' },
+    '': { 'title': /*LANG*/'Acc recorder' },
     '< Back': ()=>{load();},
     /*LANG*/'RECORD': {
       value: !!settings.recording,
@@ -60,7 +66,7 @@ function showMainMenu() {
       onchange: v => {
         setTimeout(function() {
           E.showMenu();
-          WIDGETS["recorder"].setRecording(v).then(function() {
+          WIDGETS["acc_recorder"].setRecording(v).then(function() {
             print(/*LANG*/"Complete");
             loadSettings();
             print(settings.recording);
@@ -76,7 +82,7 @@ function showMainMenu() {
       step: 1,
       onchange: v => {
         settings.recording = false; // stop recording if we change anything
-        settings.file = "recorder.log"+v+".csv";
+        settings.file = "acc_"+getTimeStampAsString()+".csv";
         updateSettings();
       }
     },
@@ -94,7 +100,7 @@ function showMainMenu() {
       }
     }
   };
-  var recorders = WIDGETS["recorder"].getRecorders();
+  var recorders = WIDGETS["acc_recorder"].getRecorders();
   Object.keys(recorders).forEach(id=>{
     mainmenu[/*LANG*/"Log "+recorders[id]().name] = menuRecord(id);
   });
