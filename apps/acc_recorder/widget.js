@@ -122,21 +122,17 @@
             recordingBuffer.push(currentRecording);
             // if buffer full
             if(recordingBuffer.length==MAX_RECORDING_BUFFER_LENGTH) {
+                recordingBuffer.shift();
+                /*
                 // store to file
                 let file = require("Storage").open("acc_backup.txt", "a");
                 for (let record of recordingBuffer) {
                     file.write(`${record}\n`);
                     recordingsWrittenToFile += 1;
                   }
-                /*
-                for(recordIdx in recordingBuffer) {
-                    file.write(recordingBuffer[recordIdx])
-                    file.write("\n");
-                    recordingsWrittenToFile += 1;
-                }
-                */
                 // make buffer empty again
                 recordingBuffer = []
+                */
             }
         }
     }
