@@ -1,6 +1,6 @@
 {
   "recording":1,
-  "file":"recorder.log0.csv",
+  "file":"acc_2023_1.csv",
   "period":20,
-  "record" : ["bat"]
+  "record" : ["bat", "Acc"]
 }

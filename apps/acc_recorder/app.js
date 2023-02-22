@@ -14,7 +14,7 @@ function loadSettings() {
   var changed = false;
   if (!settings.file) {
     changed = true;
-    settings.file = "acc_"+getTimeStampAsString()+".csv";
+    settings.file = "acc_0.csv";
   }
   if (!Array.isArray(settings.record)) {
     settings.record = ["Acc","bat"];
@@ -70,6 +70,7 @@ function showMainMenu() {
             print(/*LANG*/"Complete");
             loadSettings();
             print(settings.recording);
+            print(settings.file)
             showMainMenu();
           });
         }, 1);
